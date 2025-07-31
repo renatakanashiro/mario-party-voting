@@ -1,251 +1,277 @@
-import React, { useState, useEffect } from 'react';
-import { Star, Trophy, Users, Vote } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mario Party Votacao</title>
+</head>
+<body style="font-family: Arial; background: linear-gradient(45deg, #ff6b6b, #4ecdc4); margin: 0; padding: 20px; min-height: 100vh;">
 
-const FantasyVotingSystem = () => {
-  const [participants] = useState([
-    { name: 'Danilo', character: 'Yoshi', emoji: '🦕' },
-    { name: 'Mariah', character: 'Peach', emoji: '👑' },
-    { name: 'Leonardo', character: 'Goomba', emoji: '🟤' },
-    { name: 'Gabriella', character: 'Daisy', emoji: '🌼' },
-    { name: 'Lucas', character: 'Ninji', emoji: '🥷' },
-    { name: 'Rafaela', character: 'Bowser Jr', emoji: '🐢' },
-    { name: 'Gabriel', character: 'Boo', emoji: '👻' },
-    { name: 'Renata', character: 'Toad', emoji: '🍄' },
-    { name: 'Tonho', character: 'Mario', emoji: '🔴' },
-    { name: 'Chris', character: 'Monty Mole', emoji: '🦫' },
-    { name: 'Diego', character: 'Luigi', emoji: '🟢' },
-    { name: 'Jade', character: 'Toadette', emoji: '🌸' }
-  ]);
-  
-  const [currentVoter, setCurrentVoter] = useState(null);
-  const [votes, setVotes] = useState({});
-  const [showResults, setShowResults] = useState(false);
-  const [votedParticipants, setVotedParticipants] = useState(new Set());
-
-  const startVoting = (voterName) => {
-    setCurrentVoter(voterName);
-  };
-
-  const castVote = (candidate) => {
-    if (currentVoter && candidate.name !== currentVoter.name) {
-      setVotes(prev => ({
-        ...prev,
-        [candidate.name]: (prev[candidate.name] || 0) + 1
-      }));
-      setVotedParticipants(prev => new Set([...prev, currentVoter.name]));
-      setCurrentVoter(null);
-    }
-  };
-
-  const getResults = () => {
-    const sortedResults = Object.entries(votes)
-      .sort(([,a], [,b]) => b - a)
-      .map(([name, voteCount], index) => ({
-        name,
-        votes: voteCount,
-        position: index + 1
-      }));
-    return sortedResults;
-  };
-
-  const resetVoting = () => {
-    setVotes({});
-    setCurrentVoter(null);
-    setShowResults(false);
-    setVotedParticipants(new Set());
-  };
-
-  const results = getResults();
-  const totalVotes = Object.values(votes).reduce((sum, count) => sum + count, 0);
-
-  if (showResults) {
-    return (
-      <div className="max-w-4xl mx-auto p-6 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 min-h-screen text-white">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-2xl">
-          <div className="text-center mb-8">
-            <Trophy className="w-16 h-16 mx-auto mb-4 text-yellow-400" />
-            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-              🏆 RESULTADOS - MARIO PARTY 🏆
-            </h1>
-            <p className="text-xl text-red-300 font-semibold">Melhor Fantasia Jamboree</p>
-            <p className="text-lg text-blue-200 mt-2">Total de votos: {totalVotes}</p>
-          </div>
-
-          <div className="space-y-4">
-            {results.map((result, index) => {
-              const participant = participants.find(p => p.name === result.name);
-              return (
-                <div 
-                  key={result.name}
-                  className={`flex items-center justify-between p-4 rounded-xl transition-all duration-300 ${
-                    index === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-2 border-yellow-400' :
-                    index === 1 ? 'bg-gradient-to-r from-gray-400/20 to-gray-600/20 border border-gray-400' :
-                    index === 2 ? 'bg-gradient-to-r from-amber-600/20 to-amber-800/20 border border-amber-600' :
-                    'bg-white/5 border border-white/20'
-                  }`}
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl ${
-                      index === 0 ? 'bg-yellow-400 text-yellow-900' :
-                      index === 1 ? 'bg-gray-400 text-gray-900' :
-                      index === 2 ? 'bg-amber-600 text-amber-100' :
-                      'bg-white/20 text-white'
-                    }`}>
-                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : result.position}
-                    </div>
-                    <div className="text-4xl">
-                      {participant?.emoji || '🎮'}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold">{result.name}</h3>
-                      <p className="text-sm text-yellow-300 font-medium">
-                        {participant?.character || 'Personagem'}
-                      </p>
-                      <p className="text-xs opacity-75">
-                        {result.votes} voto{result.votes !== 1 ? 's' : ''}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {Array.from({ length: result.votes }, (_, i) => (
-                      <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-8 text-center">
-            <button
-              onClick={resetVoting}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105"
-            >
-              Nova Votação
+<div style="max-width: 800px; margin: 0 auto; background: white; border-radius: 20px; padding: 30px;">
+    
+    <div id="tela-principal">
+        <h1 style="text-align: center; color: #333;">🎮 Super Mario Party Jamboree 🎮</h1>
+        <h2 style="text-align: center; color: #666;">🏆 Votação: Melhor Fantasia 🏆</h2>
+        <p style="text-align: center; font-size: 18px;">
+            <span id="contador">0</span>/12 votaram | <span id="total">0</span> votos
+        </p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin: 30px 0;">
+            <button onclick="votar('Danilo', 'Yoshi', '🦕')" id="btn-Danilo" style="background: linear-gradient(45deg, #ff9a9e, #fecfef); border: none; border-radius: 15px; padding: 20px; cursor: pointer;">
+                <div style="font-size: 2.5em;">🦕</div>
+                <div style="font-weight: bold;">Danilo</div>
+                <div style="color: #666;">Yoshi</div>
             </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (currentVoter) {
-    return (
-      <div className="max-w-4xl mx-auto p-6 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 min-h-screen text-white">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-2xl">
-          <div className="text-center mb-8">
-            <Vote className="w-12 h-12 mx-auto mb-4 text-blue-400" />
-            <h2 className="text-3xl font-bold mb-2">
-              Olá, {currentVoter.name}! 🎮
-            </h2>
-            <p className="text-xl text-purple-200 mb-2">
-              Você está jogando como <span className="font-bold text-yellow-300">{currentVoter.character}</span> {currentVoter.emoji}
-            </p>
-            <p className="text-lg text-blue-200">
-              Vote na melhor fantasia do Super Mario Party Jamboree!
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {participants
-              .filter(p => p.name !== currentVoter.name)
-              .map((candidate) => (
-                <button
-                  key={candidate.name}
-                  onClick={() => castVote(candidate)}
-                  className="bg-gradient-to-br from-red-600/50 to-blue-600/50 hover:from-red-500/60 hover:to-blue-500/60 p-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg border border-white/20"
-                >
-                  <div className="text-6xl mb-3">{candidate.emoji}</div>
-                  <div className="text-lg font-semibold">{candidate.name}</div>
-                  <div className="text-sm text-yellow-300 font-medium">{candidate.character}</div>
-                </button>
-              ))}
-          </div>
-
-          <div className="mt-8 text-center">
-            <button
-              onClick={() => setCurrentVoter(null)}
-              className="bg-gray-600/50 hover:bg-gray-500/60 px-6 py-2 rounded-lg transition-colors"
-            >
-              Cancelar
+            
+            <button onclick="votar('Mariah', 'Peach', '👑')" id="btn-Mariah" style="background: linear-gradient(45deg, #ff9a9e, #fecfef); border: none; border-radius: 15px; padding: 20px; cursor: pointer;">
+                <div style="font-size: 2.5em;">👑</div>
+                <div style="font-weight: bold;">Mariah</div>
+                <div style="color: #666;">Peach</div>
             </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-4xl mx-auto p-6 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 min-h-screen text-white">
-      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-2xl">
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-4">🎮🏆</div>
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-red-400 to-blue-400 bg-clip-text text-transparent">
-            Super Mario Party Jamboree
-          </h1>
-          <p className="text-xl text-yellow-300 mb-2 font-semibold">
-            🏆 Votação: Melhor Fantasia 🏆
-          </p>
-          <div className="flex items-center justify-center space-x-4 text-lg">
-            <div className="flex items-center space-x-2">
-              <Users className="w-5 h-5" />
-              <span>{votedParticipants.size}/12 votaram</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Star className="w-5 h-5" />
-              <span>{totalVotes} votos totais</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-          {participants.map((participant) => {
-            const hasVoted = votedParticipants.has(participant.name);
-            return (
-              <button
-                key={participant.name}
-                onClick={() => startVoting(participant)}
-                disabled={hasVoted}
-                className={`p-4 rounded-xl transition-all duration-300 transform hover:scale-105 border ${
-                  hasVoted 
-                    ? 'bg-green-600/30 border-green-400 cursor-not-allowed opacity-60' 
-                    : 'bg-gradient-to-br from-red-600/40 to-blue-600/40 hover:from-red-500/50 hover:to-blue-500/50 border-white/20 hover:shadow-lg'
-                }`}
-              >
-                <div className="text-4xl mb-2">
-                  {hasVoted ? '✅' : participant.emoji}
-                </div>
-                <div className="font-semibold">{participant.name}</div>
-                <div className="text-sm text-yellow-300 font-medium">{participant.character}</div>
-                <div className="text-xs opacity-75 mt-1">
-                  {hasVoted ? 'Já votou' : 'Clique para votar'}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="text-center space-y-4">
-          <button
-            onClick={() => setShowResults(true)}
-            disabled={totalVotes === 0}
-            className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 disabled:scale-100"
-          >
-            Ver Resultados Parciais
-          </button>
-          
-          {totalVotes > 0 && (
-            <button
-              onClick={resetVoting}
-              className="ml-4 bg-gray-600/50 hover:bg-gray-500/60 px-6 py-3 rounded-xl transition-colors"
-            >
-              Reiniciar Votação
+            
+            <button onclick="votar('Leonardo', 'Goomba', '🟤')" id="btn-Leonardo" style="background: linear-gradient(45deg, #ff9a9e, #fecfef); border: none; border-radius: 15px; padding: 20px; cursor: pointer;">
+                <div style="font-size: 2.5em;">🟤</div>
+                <div style="font-weight: bold;">Leonardo</div>
+                <div style="color: #666;">Goomba</div>
             </button>
-          )}
+            
+            <button onclick="votar('Gabriella', 'Daisy', '🌼')" id="btn-Gabriella" style="background: linear-gradient(45deg, #ff9a9e, #fecfef); border: none; border-radius: 15px; padding: 20px; cursor: pointer;">
+                <div style="font-size: 2.5em;">🌼</div>
+                <div style="font-weight: bold;">Gabriella</div>
+                <div style="color: #666;">Daisy</div>
+            </button>
+            
+            <button onclick="votar('Lucas', 'Ninji', '🥷')" id="btn-Lucas" style="background: linear-gradient(45deg, #ff9a9e, #fecfef); border: none; border-radius: 15px; padding: 20px; cursor: pointer;">
+                <div style="font-size: 2.5em;">🥷</div>
+                <div style="font-weight: bold;">Lucas</div>
+                <div style="color: #666;">Ninji</div>
+            </button>
+            
+            <button onclick="votar('Rafaela', 'Bowser Jr', '🐢')" id="btn-Rafaela" style="background: linear-gradient(45deg, #ff9a9e, #fecfef); border: none; border-radius: 15px; padding: 20px; cursor: pointer;">
+                <div style="font-size: 2.5em;">🐢</div>
+                <div style="font-weight: bold;">Rafaela</div>
+                <div style="color: #666;">Bowser Jr</div>
+            </button>
+            
+            <button onclick="votar('Gabriel', 'Boo', '👻')" id="btn-Gabriel" style="background: linear-gradient(45deg, #ff9a9e, #fecfef); border: none; border-radius: 15px; padding: 20px; cursor: pointer;">
+                <div style="font-size: 2.5em;">👻</div>
+                <div style="font-weight: bold;">Gabriel</div>
+                <div style="color: #666;">Boo</div>
+            </button>
+            
+            <button onclick="votar('Renata', 'Toad', '🍄')" id="btn-Renata" style="background: linear-gradient(45deg, #ff9a9e, #fecfef); border: none; border-radius: 15px; padding: 20px; cursor: pointer;">
+                <div style="font-size: 2.5em;">🍄</div>
+                <div style="font-weight: bold;">Renata</div>
+                <div style="color: #666;">Toad</div>
+            </button>
+            
+            <button onclick="votar('Tonho', 'Mario', '🔴')" id="btn-Tonho" style="background: linear-gradient(45deg, #ff9a9e, #fecfef); border: none; border-radius: 15px; padding: 20px; cursor: pointer;">
+                <div style="font-size: 2.5em;">🔴</div>
+                <div style="font-weight: bold;">Tonho</div>
+                <div style="color: #666;">Mario</div>
+            </button>
+            
+            <button onclick="votar('Chris', 'Monty Mole', '🦫')" id="btn-Chris" style="background: linear-gradient(45deg, #ff9a9e, #fecfef); border: none; border-radius: 15px; padding: 20px; cursor: pointer;">
+                <div style="font-size: 2.5em;">🦫</div>
+                <div style="font-weight: bold;">Chris</div>
+                <div style="color: #666;">Monty Mole</div>
+            </button>
+            
+            <button onclick="votar('Diego', 'Luigi', '🟢')" id="btn-Diego" style="background: linear-gradient(45deg, #ff9a9e, #fecfef); border: none; border-radius: 15px; padding: 20px; cursor: pointer;">
+                <div style="font-size: 2.5em;">🟢</div>
+                <div style="font-weight: bold;">Diego</div>
+                <div style="color: #666;">Luigi</div>
+            </button>
+            
+            <button onclick="votar('Jade', 'Toadette', '🌸')" id="btn-Jade" style="background: linear-gradient(45deg, #ff9a9e, #fecfef); border: none; border-radius: 15px; padding: 20px; cursor: pointer;">
+                <div style="font-size: 2.5em;">🌸</div>
+                <div style="font-weight: bold;">Jade</div>
+                <div style="color: #666;">Toadette</div>
+            </button>
         </div>
-      </div>
+        
+        <div style="text-align: center;">
+            <button onclick="verResultados()" id="btn-resultados" style="background: #667eea; color: white; border: none; padding: 15px 30px; border-radius: 25px; font-size: 18px; cursor: pointer; margin: 10px;" disabled>
+                Ver Resultados
+            </button>
+            <button onclick="reiniciar()" id="btn-reiniciar" style="background: #ccc; color: white; border: none; padding: 15px 30px; border-radius: 25px; font-size: 18px; cursor: pointer; margin: 10px; display: none;">
+                Reiniciar
+            </button>
+        </div>
     </div>
-  );
-};
 
-export default FantasyVotingSystem;
+    <div id="tela-votacao" style="display: none;">
+        <h2 style="text-align: center;" id="info-votante">Olá!</h2>
+        <p style="text-align: center; background: #ffecd2; padding: 20px; border-radius: 15px; margin: 20px 0;" id="info-personagem">Vote na melhor fantasia!</p>
+        
+        <div id="opcoes-voto" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0;"></div>
+        
+        <div style="text-align: center;">
+            <button onclick="cancelar()" style="background: #ccc; color: white; border: none; padding: 15px 30px; border-radius: 25px; cursor: pointer;">
+                Cancelar
+            </button>
+        </div>
+    </div>
+
+    <div id="tela-resultados" style="display: none;">
+        <h1 style="text-align: center;">🏆 RESULTADOS 🏆</h1>
+        <h2 style="text-align: center; color: #666;">Melhor Fantasia Mario Party</h2>
+        <div id="lista-resultados"></div>
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="reiniciar()" style="background: #667eea; color: white; border: none; padding: 15px 30px; border-radius: 25px; font-size: 18px; cursor: pointer;">
+                Nova Votação
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let votos = {};
+let jaVotaram = [];
+let votanteAtual = null;
+
+const pessoas = [
+    {nome: 'Danilo', personagem: 'Yoshi', emoji: '🦕'},
+    {nome: 'Mariah', personagem: 'Peach', emoji: '👑'},
+    {nome: 'Leonardo', personagem: 'Goomba', emoji: '🟤'},
+    {nome: 'Gabriella', personagem: 'Daisy', emoji: '🌼'},
+    {nome: 'Lucas', personagem: 'Ninja', emoji: '🥷'},
+    {nome: 'Rafaela', personagem: 'Bowser Jr', emoji: '🐢'},
+    {nome: 'Gabriel', personagem: 'Boo', emoji: '👻'},
+    {nome: 'Renata', personagem: 'Toad', emoji: '🍄'},
+    {nome: 'Tonho', personagem: 'Mario', emoji: '🔴'},
+    {nome: 'Chris', personagem: 'Monty Mole', emoji: '🦫'},
+    {nome: 'Diego', personagem: 'Luigi', emoji: '🟢'},
+    {nome: 'Jade', personagem: 'Toadette', emoji: '🌸'}
+];
+
+function atualizarEstatisticas() {
+    document.getElementById('contador').textContent = jaVotaram.length;
+    const totalVotos = Object.values(votos).reduce((a, b) => a + b, 0);
+    document.getElementById('total').textContent = totalVotos;
+    
+    document.getElementById('btn-resultados').disabled = totalVotos === 0;
+    document.getElementById('btn-reiniciar').style.display = totalVotos > 0 ? 'inline-block' : 'none';
+    
+    jaVotaram.forEach(nome => {
+        const btn = document.getElementById('btn-' + nome);
+        if (btn) {
+            btn.style.background = 'linear-gradient(45deg, #90EE90, #98FB98)';
+            btn.disabled = true;
+            btn.innerHTML = btn.innerHTML.replace(/🦕|👑|🟤|🌼|🥷|🐢|👻|🍄|🔴|🦫|🟢|🌸/, '✅');
+        }
+    });
+}
+
+function votar(nome, personagem, emoji) {
+    if (jaVotaram.includes(nome)) return;
+    
+    votanteAtual = {nome, personagem, emoji};
+    document.getElementById('tela-principal').style.display = 'none';
+    document.getElementById('tela-votacao').style.display = 'block';
+    
+    document.getElementById('info-votante').textContent = 'Olá, ' + nome + '! 🎮';
+    document.getElementById('info-personagem').textContent = 'Você é ' + personagem + ' ' + emoji + ' - Vote na melhor fantasia!';
+    
+    mostrarOpcoes();
+}
+
+function mostrarOpcoes() {
+    const container = document.getElementById('opcoes-voto');
+    container.innerHTML = '';
+    
+    pessoas.filter(p => p.nome !== votanteAtual.nome).forEach(pessoa => {
+        const btn = document.createElement('button');
+        btn.style.cssText = 'background: linear-gradient(45deg, #ff9a9e, #fecfef); border: none; border-radius: 15px; padding: 15px; cursor: pointer; text-align: center;';
+        btn.onclick = () => registrarVoto(pessoa.nome);
+        btn.innerHTML = `
+            <div style="font-size: 2em;">${pessoa.emoji}</div>
+            <div style="font-weight: bold;">${pessoa.nome}</div>
+            <div style="color: #666; font-size: 0.9em;">${pessoa.personagem}</div>
+        `;
+        container.appendChild(btn);
+    });
+}
+
+function registrarVoto(candidato) {
+    votos[candidato] = (votos[candidato] || 0) + 1;
+    jaVotaram.push(votanteAtual.nome);
+    voltarTelaPrincipal();
+}
+
+function cancelar() {
+    voltarTelaPrincipal();
+}
+
+function voltarTelaPrincipal() {
+    votanteAtual = null;
+    document.getElementById('tela-principal').style.display = 'block';
+    document.getElementById('tela-votacao').style.display = 'none';
+    document.getElementById('tela-resultados').style.display = 'none';
+    atualizarEstatisticas();
+}
+
+function verResultados() {
+    document.getElementById('tela-principal').style.display = 'none';
+    document.getElementById('tela-resultados').style.display = 'block';
+    
+    const resultados = Object.entries(votos)
+        .sort(([,a], [,b]) => b - a)
+        .map(([nome, qtdVotos], index) => ({nome, votos: qtdVotos, posicao: index + 1}));
+    
+    const container = document.getElementById('lista-resultados');
+    container.innerHTML = '';
+    
+    resultados.forEach((resultado, index) => {
+        const pessoa = pessoas.find(p => p.nome === resultado.nome);
+        const div = document.createElement('div');
+        
+        let cor = '#f8f9fa';
+        let medalha = resultado.posicao;
+        
+        if (index === 0) { cor = 'linear-gradient(45deg, #FFD700, #FFA500)'; medalha = '🥇'; }
+        else if (index === 1) { cor = 'linear-gradient(45deg, #C0C0C0, #A0A0A0)'; medalha = '🥈'; }
+        else if (index === 2) { cor = 'linear-gradient(45deg, #CD7F32, #B8860B)'; medalha = '🥉'; }
+        
+        div.style.cssText = `background: ${cor}; margin: 10px 0; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;`;
+        div.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="font-size: 1.5em; width: 40px; text-align: center;">${medalha}</div>
+                <span style="font-size: 2em;">${pessoa.emoji}</span>
+                <div>
+                    <div style="font-weight: bold;">${resultado.nome}</div>
+                    <div style="color: #666;">${pessoa.personagem}</div>
+                </div>
+            </div>
+            <div style="font-weight: bold;">${resultado.votos} voto${resultado.votos !== 1 ? 's' : ''}</div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function reiniciar() {
+    votos = {};
+    jaVotaram = [];
+    votanteAtual = null;
+    
+    pessoas.forEach(pessoa => {
+        const btn = document.getElementById('btn-' + pessoa.nome);
+        if (btn) {
+            btn.style.background = 'linear-gradient(45deg, #ff9a9e, #fecfef)';
+            btn.disabled = false;
+            btn.innerHTML = `
+                <div style="font-size: 2.5em;">${pessoa.emoji}</div>
+                <div style="font-weight: bold;">${pessoa.nome}</div>
+                <div style="color: #666;">${pessoa.personagem}</div>
+            `;
+        }
+    });
+    
+    voltarTelaPrincipal();
+}
+
+atualizarEstatisticas();
+</script>
+
+</body>
+</html>
