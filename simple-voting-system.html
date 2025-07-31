@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mario Party - Votação</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+        .stats {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            color: #555;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .person {
+            background: linear-gradient(45deg, #ff9a9e, #fecfef);
+            border: none;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+            font-size: 1em;
+        }
+        .person:hover {
+            transform: scale(1.05);
+        }
+        .person.voted {
+            background: linear-gradient(45deg, #90EE90, #98FB98);
+            cursor: not-allowed;
+        }
+        .emoji {
+            font-size: 3em;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .character {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: transform 0.3s;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .hidden {
+            display: none;
+        }
+        .voting-screen {
+            text-align: center;
+        }
+        .voter-info {
+            background: linear-gradient(45deg, #ffecd2, #fcb69f);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        .results-screen {
+            text-align: center;
+        }
+        .result-item {
+            background: #f8f9fa;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .result-item.first {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            font-weight: bold;
+        }
+        .result-item.second {
+            background: linear-gradient(45deg, #C0C0C0, #A0A0A0);
+            font-weight: bold;
+        }
+        .result-item.third {
+            background: linear-gradient(45deg, #CD7F32, #B8860B);
+            font-weight: bold;
+        }
+        .result-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .position {
+            font-size: 1.5em;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #333;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Tela Principal -->
+        <div id="main-screen">
+            <h1>🎮 Super Mario Party Jamboree 🎮</h1>
+            <div class="subtitle">🏆 Votação: Melhor Fantasia 🏆</div>
+            <div class="stats">
+                <span id="voted-count">0</span>/12 votaram | 
+                <span id="total-votes">0</span> votos totais
+            </div>
+            <div class="grid" id="participants"></div>
+            <div class="buttons">
+                <button class="btn" onclick="showResults()" id="results-btn" disabled>Ver Resultados</button>
+                <button class="btn" onclick="resetAll()" id="reset-btn" style="display:none;">Reiniciar</button>
+            </div>
+        </div>
+
+        <!-- Tela de Votação -->
+        <div id="voting-screen" class="hidden">
+            <div class="voting-screen">
+                <div class="voter-info">
+                    <h2 id="voter-name">Olá!</h2>
+                    <p id="voter-character">Você é o personagem X</p>
+                    <p>Vote na melhor fantasia!</p>
+                </div>
+                <div class="grid" id="voting-options"></div>
+                <div class="buttons">
+                    <button class="btn" onclick="cancelVote()">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tela de Resultados -->
+        <div id="results-screen" class="hidden">
+            <div class="results-screen">
+                <h1>🏆 RESULTADOS 🏆</h1>
+                <div class="subtitle">Melhor Fantasia Mario Party</div>
+                <div id="results-list"></div>
+                <div class="buttons">
+                    <button class="btn" onclick="resetAll()">Nova Votação</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados dos participantes
+        const people = [
+            {name: 'Danilo', character: 'Yoshi', emoji: '🦕'},
+            {name: 'Mariah', character: 'Peach', emoji: '👑'},
+            {name: 'Leonardo', character: 'Goomba', emoji: '🟤'},
+            {name: 'Gabriella', character: 'Daisy', emoji: '🌼'},
+            {name: 'Lucas', character: 'Ninji', emoji: '🥷'},
+            {name: 'Rafaela', character: 'Bowser Jr', emoji: '🐢'},
+            {name: 'Gabriel', character: 'Boo', emoji: '👻'},
+            {name: 'Renata', character: 'Toad', emoji: '🍄'},
+            {name: 'Tonho', character: 'Mario', emoji: '🔴'},
+            {name: 'Chris', character: 'Monty Mole', emoji: '🦫'},
+            {name: 'Diego', character: 'Luigi', emoji: '🟢'},
+            {name: 'Jade', character: 'Toadette', emoji: '🌸'}
+        ];
+
+        // Estado do jogo
+        let votes = {};
+        let voted = new Set();
+        let currentVoter = null;
+
+        // Funções principais
+        function updateStats() {
+            document.getElementById('voted-count').textContent = voted.size;
+            const total = Object.values(votes).reduce((a, b) => a + b, 0);
+            document.getElementById('total-votes').textContent = total;
+            
+            document.getElementById('results-btn').disabled = total === 0;
+            document.getElementById('reset-btn').style.display = total > 0 ? 'block' : 'none';
+        }
+
+        function showParticipants() {
+            const container = document.getElementById('participants');
+            container.innerHTML = '';
+            
+            people.forEach(person => {
+                const hasVoted = voted.has(person.name);
+                const div = document.createElement('button');
+                div.className = 'person' + (hasVoted ? ' voted' : '');
+                div.disabled = hasVoted;
+                div.onclick = () => startVoting(person);
+                div.innerHTML = `
+                    <span class="emoji">${hasVoted ? '✅' : person.emoji}</span>
+                    <div class="name">${person.name}</div>
+                    <div class="character">${person.character}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function startVoting(voter) {
+            currentVoter = voter;
+            document.getElementById('main-screen').className = 'hidden';
+            document.getElementById('voting-screen').className = '';
+            document.getElementById('results-screen').className = 'hidden';
+            
+            document.getElementById('voter-name').textContent = `Olá, ${voter.name}! 🎮`;
+            document.getElementById('voter-character').textContent = `Você é ${voter.character} ${voter.emoji}`;
+            
+            showVotingOptions();
+        }
+
+        function showVotingOptions() {
+            const container = document.getElementById('voting-options');
+            container.innerHTML = '';
+            
+            people.filter(p => p.name !== currentVoter.name).forEach(person => {
+                const div = document.createElement('button');
+                div.className = 'person';
+                div.onclick = () => castVote(person);
+                div.innerHTML = `
+                    <span class="emoji">${person.emoji}</span>
+                    <div class="name">${person.name}</div>
+                    <div class="character">${person.character}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function castVote(candidate) {
+            votes[candidate.name] = (votes[candidate.name] || 0) + 1;
+            voted.add(currentVoter.name);
+            currentVoter = null;
+            showMainScreen();
+        }
+
+        function cancelVote() {
+            currentVoter = null;
+            showMainScreen();
+        }
+
+        function showMainScreen() {
+            document.getElementById('main-screen').className = '';
+            document.getElementById('voting-screen').className = 'hidden';
+            document.getElementById('results-screen').className = 'hidden';
+            updateStats();
+            showParticipants();
+        }
+
+        function showResults() {
+            document.getElementById('main-screen').className = 'hidden';
+            document.getElementById('voting-screen').className = 'hidden';
+            document.getElementById('results-screen').className = '';
+            
+            const results = Object.entries(votes)
+                .sort(([,a], [,b]) => b - a)
+                .map(([name, voteCount], index) => ({name, votes: voteCount, position: index + 1}));
+                
+            const container = document.getElementById('results-list');
+            container.innerHTML = '';
+            
+            results.forEach((result, index) => {
+                const person = people.find(p => p.name === result.name);
+                const div = document.createElement('div');
+                
+                let className = 'result-item';
+                let medal = result.position;
+                
+                if (index === 0) { className += ' first'; medal = '🥇'; }
+                else if (index === 1) { className += ' second'; medal = '🥈'; }
+                else if (index === 2) { className += ' third'; medal = '🥉'; }
+                
+                div.className = className;
+                div.innerHTML = `
+                    <div class="result-left">
+                        <div class="position">${medal}</div>
+                        <span style="font-size:2em;">${person.emoji}</span>
+                        <div>
+                            <div style="font-weight:bold;">${result.name}</div>
+                            <div style="color:#666;">${person.character}</div>
+                        </div>
+                    </div>
+                    <div>${result.votes} voto${result.votes !== 1 ? 's' : ''}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function resetAll() {
+            votes = {};
+            voted = new Set();
+            currentVoter = null;
+            showMainScreen();
+        }
+
+        // Inicializar
+        showParticipants();
+        updateStats();
+    </script>
+</body>
+</html>
