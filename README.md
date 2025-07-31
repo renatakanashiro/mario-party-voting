@@ -1,1 +1,0 @@
-# mario-party-voting
